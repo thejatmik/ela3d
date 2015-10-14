@@ -11,6 +11,7 @@
 #include <string>
 #include <assert.h>
 #include "conio.h"
+#include <iomanip>
 
 using namespace std;
 
@@ -365,9 +366,12 @@ int main(void) {
 	HANDLE_ERROR(cudaMalloc((void**)&gaty, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpy(gaty, &Ngatx, sizeof(int), cudaMemcpyHostToDevice));
 
-	float *tempgat = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int ii = 0; ii < (DIMX*DIMY*DIMZ); ii++) {
-		tempgat[ii] = 0.0;
+	float *tempgat = (float*)malloc(sizeof(float)*(DIMX*DIMY));
+	for (int i = 0; i < DIMX; i++){
+		for (int j = 0; j < DIMY; j++) {
+			int ij = i + j*DIMX;
+			tempgat[ij] = 0.0;
+		}
 	}
 	float *gatvx, *gatvy, *gatvz;
 	HANDLE_ERROR(cudaMalloc((void**)&gatvx, sizeof(float)*(DIMX*DIMY)));
@@ -377,11 +381,13 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(gatvy, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(gatvz, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 
-	int NSTEP = 1000;
+	int NSTEP = 5000;
+	float DELTATT = 1e-3;
+	int sampgat=2;
 	int IT_OUTPUT = 500;
 
 	int DELTAX, DELTAY, DELTAZ;
-	DELTAX = 1.5; DELTAY = DELTAX; DELTAZ = DELTAX;
+	DELTAX = 10; DELTAY = DELTAX; DELTAZ = DELTAX;
 	float ONE_OVER_DELTAXX, ONE_OVER_DELTAYY, ONE_OVER_DELTAZZ;
 	ONE_OVER_DELTAXX = 1 / float(DELTAX);
 	ONE_OVER_DELTAZZ = ONE_OVER_DELTAXX; ONE_OVER_DELTAYY = ONE_OVER_DELTAXX;
@@ -422,7 +428,6 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(rho, temprho, sizeof(float)*(DIMX*DIMY*DIMZ), cudaMemcpyHostToDevice));
 	free(tempcp); free(tempcs); free(temprho);
 
-	float DELTATT = 1e-5;
 	float *DELTAT;
 	HANDLE_ERROR(cudaMalloc((void**)&DELTAT, sizeof(float)));
 	HANDLE_ERROR(cudaMemcpy(DELTAT, &DELTATT, sizeof(float), cudaMemcpyHostToDevice));
@@ -447,7 +452,7 @@ int main(void) {
 	int ISOURCEE, KSOURCEE, JSOURCEE;
 	ISOURCEE = DIMX / 2;
 	JSOURCEE = DIMY / 2;
-	KSOURCEE = DIMZ / 2;
+	KSOURCEE = 15;
 	int *ISOURCE, *KSOURCE, *JSOURCE;
 	HANDLE_ERROR(cudaMalloc((void**)&ISOURCE, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpy(ISOURCE, &ISOURCEE, sizeof(int), cudaMemcpyHostToDevice));
@@ -1090,6 +1095,7 @@ int main(void) {
 	for (int i = 1; i <= NIMZ; i++) {
 		zval = DELTAZ*float(i - 1);
 		abscissa_in_PML = zoriginbottom - zval;//PML ZMIN
+		/* disable pml zmin for free surface condition
 		if (abscissa_in_PML >= 0.0) {
 			abscissa_normalized = abscissa_in_PML / thickness_PML_y;
 			tempd_z[i] = d0_z*powf(abscissa_normalized, NPOWER);
@@ -1104,6 +1110,7 @@ int main(void) {
 			tempK_z_half[i] = 1.0 + (K_MAX_PML - 1.0)*powf(abscissa_normalized, NPOWER);
 			tempalpha_z_half[i] = ALPHA_MAX_PML*(1.0 - abscissa_normalized) + 0.1*ALPHA_MAX_PML;
 		}
+		*/
 
 		abscissa_in_PML = zval - zorigintop;//PML ZMAX
 		if (abscissa_in_PML >= 0.0) {
@@ -1176,54 +1183,50 @@ int main(void) {
 		HANDLE_ERROR(cudaMemcpy(iit, &it, sizeof(int), cudaMemcpyHostToDevice));
 		keraddSource << <blocks, threads >> >(DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy, rho);
 
-		char nmfile4[100], nmfile5[100], nmfile6[100];
+		if(fmod(it, sampgat)==0) {
+			char nmfile4[20], nmfile5[20], nmfile6[20];
 		
-		int xlen = DIMX / Ngatx;
-		int ylen = DIMY / Ngaty;
-		HANDLE_ERROR(cudaMemcpy(tempgat, gatvx, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
-		//sprintf(nmfile4, "rechorvx.bin");
-		//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
-		sprintf(nmfile4, "rechorvx.txt"); 
-		std::ofstream fout4(nmfile4, ios::out | ios::app);
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int kk = i + j*DIMX;
-				if ((((i + 1) % xlen) == 0) || (((1 + j) % ylen) == 0)) {
-					fout4.write((char *)&tempgat[kk], sizeof tempgat[kk]);
+			int xlen = NIMX / Ngatx;
+			int ylen = NIMY / Ngaty;
+			cout <<endl <<xlen <<" " <<ylen;
+			HANDLE_ERROR(cudaMemcpy(tempgat, gatvx, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
+			//sprintf(nmfile4, "rechorvx.bin");
+			//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
+			sprintf(nmfile4, "rechorvx.txt"); 
+			std::ofstream fout4;
+			fout4.open(nmfile4, ios::app);
+			for (int j = 0; j < DIMY; j+=ylen) {
+				for (int i = 0; i < DIMX; i+=xlen) {
+					int kk = i + j*DIMX;
+					fout4 <<tempgat[kk] <<" ";
 				}
-			}
-			fout4 <<char(13) << endl;
-		}
+			}fout4<<endl;
 
-		HANDLE_ERROR(cudaMemcpy(tempgat, gatvy, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
-		//sprintf(nmfile5, "rechorvy.bin");
-		//std::ofstream fout5(nmfile5, ios::out | ios::app | ios::binary);
-		sprintf(nmfile5, "rechorvy.txt");
-		std::ofstream fout5(nmfile5, ios::out | ios::app);
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int kk = i + j*DIMX;
-				if ((((i + 1) % xlen) == 0) || (((1 + j) % ylen) == 0)) {
-					fout5.write((char *)&tempgat[kk], sizeof tempgat[kk]);
+			HANDLE_ERROR(cudaMemcpy(tempgat, gatvy, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
+			//sprintf(nmfile5, "rechorvy.bin");
+			//std::ofstream fout5(nmfile5, ios::out | ios::app | ios::binary);
+			sprintf(nmfile5, "rechorvy.txt");
+			std::ofstream fout5;
+			fout5.open(nmfile5, ios::app);
+			for (int j = 0; j < DIMY; j+=ylen) {
+				for (int i = 0; i < DIMX; i+=xlen) {
+					int kk = i + j*DIMX;
+					fout5 <<tempgat[kk] <<" ";
 				}
-			}
-			fout5 << char(13) << endl;
-		}
+			}fout5<<endl;
 
-		HANDLE_ERROR(cudaMemcpy(tempgat, gatvz, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
-		//sprintf(nmfile6, "rechorvz.bin");
-		//std::ofstream fout6(nmfile6, ios::out | ios::app | ios::binary);
-		sprintf(nmfile6, "rechorvz.txt"); 
-		std::ofstream fout6(nmfile6, ios::out | ios::app);
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int kk = i + j*DIMX;
-				if ((((i + 1)%xlen) == 0) || (((1 + j)%ylen) == 0)) {
-					float ay = tempgat[kk];
-					fout6.write((char *)&ay, sizeof ay);
+			HANDLE_ERROR(cudaMemcpy(tempgat, gatvz, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
+			//sprintf(nmfile6, "rechorvz.bin");
+			//std::ofstream fout6(nmfile6, ios::out | ios::app | ios::binary);
+			sprintf(nmfile6, "rechorvz.txt"); 
+			std::ofstream fout6;
+			fout6.open(nmfile6, ios::app);
+			for (int j = 0; j < DIMY; j+=ylen) {
+				for (int i = 0; i < DIMX; i+=xlen) {
+					int kk = i + j*DIMX;
+					fout6 <<tempgat[kk] <<" ";
 				}
-			}
-			fout6 << char(13) << endl;
+			}fout6<<endl;
 		}
 
 		if (fmod(it, IT_OUTPUT) == 0){
@@ -1247,10 +1250,10 @@ int main(void) {
 				}
 			}
 
-			//sprintf_s(nmfile2, "vy%05i.bin", it);
-			//std::ofstream fout2(nmfile2, ios::out | ios::binary);
-			sprintf_s(nmfile2, "vy%05i.txt", it);
-			std::ofstream fout2(nmfile2, ios::out);
+			sprintf_s(nmfile2, "vy%05i.bin", it);
+			std::ofstream fout2(nmfile2, ios::out | ios::binary);
+			//sprintf_s(nmfile2, "vy%05i.txt", it);
+			//std::ofstream fout2(nmfile2, ios::out);
 			for (int kk = 0; kk < DIMZ; kk++) {
 				for (int jj = 0; jj < DIMY; jj++) {
 					for (int ii = 0; ii < DIMX; ii++) {
@@ -1260,16 +1263,15 @@ int main(void) {
 				}
 			}
 
-			//sprintf_s(nmfile3, "vx%05i.bin", it);
-			//std::ofstream fout3(nmfile3, ios::out | ios::binary);
-			sprintf_s(nmfile3, "vx%05i.txt", it);
-			std::ofstream fout3(nmfile3, ios::out);
+			sprintf_s(nmfile3, "vx%05i.bin", it);
+			std::ofstream fout3(nmfile3, ios::out | ios::binary);
+			//sprintf_s(nmfile3, "vx%05i.txt", it);
+			//std::ofstream fout3(nmfile3, ios::out);
 			for (int kk = 0; kk < DIMZ; kk++) {
 				for (int jj = 0; jj < DIMY; jj++) {
 					for (int ii = 0; ii < DIMX; ii++) {
 						int ijk = ii + jj*DIMX + kk*DIMX*DIMY;
 						fout3.write((char *)&tempvx[ijk], sizeof tempvx[ijk]);
-						fout1 << " ";
 					}
 				}
 			}
