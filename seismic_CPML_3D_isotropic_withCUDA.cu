@@ -288,7 +288,7 @@ __global__ void kervz(float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DEL
 
 }
 
-__global__ void keraddSource(int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *ISOURCE, int *JSOURCE, int *KSOURCE, float *ANGLE_FORCE, float *DEGREES_TO_RADIANS, float *DELTAT, float *factor, float *t0, float *ff0, float *DPI, float *vx, float *vy, float *rho) {
+__global__ void keraddSource(float *sigmaxx, float *sigmayy, float *sigmazz, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *ISOURCE, int *JSOURCE, int *KSOURCE, float *ANGLE_FORCE, float *DEGREES_TO_RADIANS, float *DELTAT, float *factor, float *t0, float *ff0, float *DPI, float *vx, float *vy) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -297,9 +297,11 @@ __global__ void keraddSource(int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *
 	int aaaa = blockDim.x * blockDim.y * blockDim.z;
 	int bbbb = threadIdx.z * (blockDim.x * blockDim.y);
 	int cccc = (threadIdx.y * blockDim.x) + threadIdx.x;
-	int offset = index_x + index_y*DDIMX[0] + index_z*DDIMX[0] * DDIMZ[0];
+	int offset = index_x + index_y*DDIMX[0] + index_z*DDIMX[0] * DDIMY[0];
 	int left = offset - 1;
 	int ytop = offset + DDIMX[0];
+
+	float lambdaplus2mu = rho[offset] * cp[offset] * cp[offset];
 
 	float a = DPI[0] * DPI[0] * ff0[0] * ff0[0];
 	float t = float(iit[0] - 1)*DELTAT[0];
@@ -319,8 +321,15 @@ __global__ void keraddSource(int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *
 	if (index_z == KSOURCE[0]) {
 		if (index_y == JSOURCE[0]) {
 			if (index_x == ISOURCE[0]) {
+				/*earthquake event source
 				vx[offset] = vx[offset] + force_x*DELTAT[0] / ((rho[offset] + rho[left]) / 2);
 				vy[offset] = vy[offset] + force_y*DELTAT[0] / ((rho[offset] + rho[ytop]) / 2);
+				*/
+
+				/*explosives source*/
+				sigmaxx[offset] = sigmaxx[offset] + force_x*DELTAT[0] * lambdaplus2mu;
+				sigmayy[offset] = sigmayy[offset] + force_x*DELTAT[0] * lambdaplus2mu;
+				sigmazz[offset] = sigmazz[offset] + force_y*DELTAT[0] * lambdaplus2mu;
 			}
 		}
 	}
@@ -381,10 +390,10 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(gatvy, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(gatvz, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 
-	int NSTEP = 5000;
+	int NSTEP = 2000;
 	float DELTATT = 1e-3;
-	int sampgat=2;
-	int IT_OUTPUT = 500;
+	int sampgat = 2; //tsamp = sampgat*Deltat
+	int IT_OUTPUT = 200;
 
 	int DELTAX, DELTAY, DELTAZ;
 	DELTAX = 10; DELTAY = DELTAX; DELTAZ = DELTAX;
@@ -433,7 +442,7 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(DELTAT, &DELTATT, sizeof(float), cudaMemcpyHostToDevice));
 
 	float f0, tt0, factorr;
-	f0 = 7;
+	f0 = 35;
 	tt0 = 1.2 / f0;
 	float *ff0, *t0;
 	HANDLE_ERROR(cudaMalloc((void**)&t0, sizeof(float)));
@@ -452,7 +461,7 @@ int main(void) {
 	int ISOURCEE, KSOURCEE, JSOURCEE;
 	ISOURCEE = DIMX / 2;
 	JSOURCEE = DIMY / 2;
-	KSOURCEE = 15;
+	KSOURCEE = DIMZ / 2;
 	int *ISOURCE, *KSOURCE, *JSOURCE;
 	HANDLE_ERROR(cudaMalloc((void**)&ISOURCE, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpy(ISOURCE, &ISOURCEE, sizeof(int), cudaMemcpyHostToDevice));
@@ -461,7 +470,7 @@ int main(void) {
 	HANDLE_ERROR(cudaMalloc((void**)&KSOURCE, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpy(KSOURCE, &KSOURCEE, sizeof(int), cudaMemcpyHostToDevice));
 
-	float ANGLE_FORCEE = 90;
+	float ANGLE_FORCEE = 0;
 	float *ANGLE_FORCE;
 	HANDLE_ERROR(cudaMalloc((void**)&ANGLE_FORCE, sizeof(float)));
 	HANDLE_ERROR(cudaMemcpy(ANGLE_FORCE, &ANGLE_FORCEE, sizeof(float), cudaMemcpyHostToDevice));
@@ -1097,18 +1106,17 @@ int main(void) {
 		abscissa_in_PML = zoriginbottom - zval;//PML ZMIN
 		/* disable pml zmin for free surface condition
 		if (abscissa_in_PML >= 0.0) {
-			abscissa_normalized = abscissa_in_PML / thickness_PML_y;
-			tempd_z[i] = d0_z*powf(abscissa_normalized, NPOWER);
-			tempK_z[i] = 1.0 + (K_MAX_PML - 1.0)*powf(abscissa_normalized, NPOWER);
-			tempalpha_y[i] = ALPHA_MAX_PML*(1.0 - abscissa_normalized) + 0.1*ALPHA_MAX_PML;
+		abscissa_normalized = abscissa_in_PML / thickness_PML_y;
+		tempd_z[i] = d0_z*powf(abscissa_normalized, NPOWER);
+		tempK_z[i] = 1.0 + (K_MAX_PML - 1.0)*powf(abscissa_normalized, NPOWER);
+		tempalpha_y[i] = ALPHA_MAX_PML*(1.0 - abscissa_normalized) + 0.1*ALPHA_MAX_PML;
 		}
-
 		abscissa_in_PML = yoriginbottom - (yval + DELTAY / 2.0);
 		if (abscissa_in_PML >= 0.0) {
-			abscissa_normalized = abscissa_in_PML / thickness_PML_y;
-			tempd_z_half[i] = d0_z*powf(abscissa_normalized, NPOWER);
-			tempK_z_half[i] = 1.0 + (K_MAX_PML - 1.0)*powf(abscissa_normalized, NPOWER);
-			tempalpha_z_half[i] = ALPHA_MAX_PML*(1.0 - abscissa_normalized) + 0.1*ALPHA_MAX_PML;
+		abscissa_normalized = abscissa_in_PML / thickness_PML_y;
+		tempd_z_half[i] = d0_z*powf(abscissa_normalized, NPOWER);
+		tempK_z_half[i] = 1.0 + (K_MAX_PML - 1.0)*powf(abscissa_normalized, NPOWER);
+		tempalpha_z_half[i] = ALPHA_MAX_PML*(1.0 - abscissa_normalized) + 0.1*ALPHA_MAX_PML;
 		}
 		*/
 
@@ -1171,7 +1179,7 @@ int main(void) {
 		kersigmaxyz << <blocks, threads >> >(cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
 		cout << endl << "Sig!";
 		kersigmaxy << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
-		
+
 		kersigmaxzyz << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
 
 		kervxvy << <blocks, threads >> >(rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
@@ -1181,26 +1189,26 @@ int main(void) {
 		kerGather << <blocks, threads >> >(ISOURCE, JSOURCE, KSOURCE, DDIMX, DDIMY, DDIMZ, gatvx, gatvz, gatvy, DDIMX, DDIMY, DDIMZ, gatx, gaty, DPML, vx, vy, vz);
 
 		HANDLE_ERROR(cudaMemcpy(iit, &it, sizeof(int), cudaMemcpyHostToDevice));
-		keraddSource << <blocks, threads >> >(DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy, rho);
+		keraddSource << <blocks, threads >> >(sigmaxx, sigmayy, sigmazz, cp, cs, rho, DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy);
 
-		if(fmod(it, sampgat)==0) {
+		if (fmod(it, sampgat) == 0) {
 			char nmfile4[20], nmfile5[20], nmfile6[20];
-		
+
 			int xlen = NIMX / Ngatx;
-			int ylen = NIMY / Ngaty;
-			cout <<endl <<xlen <<" " <<ylen;
+			int ylen = (NIMY - (2 * NPOINTS_PML)) / Ngaty;
+			cout << endl << xlen << " " << ylen;
 			HANDLE_ERROR(cudaMemcpy(tempgat, gatvx, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
 			//sprintf(nmfile4, "rechorvx.bin");
 			//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
-			sprintf(nmfile4, "rechorvx.txt"); 
+			sprintf(nmfile4, "rechorvx.txt");
 			std::ofstream fout4;
 			fout4.open(nmfile4, ios::app);
-			for (int j = 0; j < DIMY; j+=ylen) {
-				for (int i = 0; i < DIMX; i+=xlen) {
-					int kk = i + j*DIMX;
-					fout4 <<tempgat[kk] <<" ";
+			for (int j = 0; j < DIMY; j += ylen) {
+				for (int i = 0; i < DIMX; i += xlen) {
+					int kk = i + j*NIMX;
+					fout4 << tempgat[kk] << " ";
 				}
-			}fout4<<endl;
+			}fout4 << endl;
 
 			HANDLE_ERROR(cudaMemcpy(tempgat, gatvy, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
 			//sprintf(nmfile5, "rechorvy.bin");
@@ -1208,25 +1216,25 @@ int main(void) {
 			sprintf(nmfile5, "rechorvy.txt");
 			std::ofstream fout5;
 			fout5.open(nmfile5, ios::app);
-			for (int j = 0; j < DIMY; j+=ylen) {
-				for (int i = 0; i < DIMX; i+=xlen) {
-					int kk = i + j*DIMX;
-					fout5 <<tempgat[kk] <<" ";
+			for (int j = 0; j < DIMY; j += ylen) {
+				for (int i = 0; i < DIMX; i += xlen) {
+					int kk = i + j*NIMX;
+					fout5 << tempgat[kk] << " ";
 				}
-			}fout5<<endl;
+			}fout5 << endl;
 
 			HANDLE_ERROR(cudaMemcpy(tempgat, gatvz, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
 			//sprintf(nmfile6, "rechorvz.bin");
 			//std::ofstream fout6(nmfile6, ios::out | ios::app | ios::binary);
-			sprintf(nmfile6, "rechorvz.txt"); 
+			sprintf(nmfile6, "rechorvz.txt");
 			std::ofstream fout6;
 			fout6.open(nmfile6, ios::app);
-			for (int j = 0; j < DIMY; j+=ylen) {
-				for (int i = 0; i < DIMX; i+=xlen) {
-					int kk = i + j*DIMX;
-					fout6 <<tempgat[kk] <<" ";
+			for (int j = 0; j < DIMY; j += ylen) {
+				for (int i = 0; i < DIMX; i += xlen) {
+					int kk = i + j*NIMX;
+					fout6 << tempgat[kk] << " ";
 				}
-			}fout6<<endl;
+			}fout6 << endl;
 		}
 
 		if (fmod(it, IT_OUTPUT) == 0){
@@ -1236,7 +1244,7 @@ int main(void) {
 
 			//save to file
 			char nmfile1[20]; char nmfile2[20]; char nmfile3[20];
-			
+
 			sprintf_s(nmfile1, "vz%05i.bin", it);
 			std::ofstream fout1(nmfile1, ios::out | ios::binary);
 			//sprintf_s(nmfile1, "vz%05i.txt", it);
