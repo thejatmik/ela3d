@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include <math.h>
 #include <stdio.h>
 #include <iostream>
@@ -14,6 +15,7 @@
 using namespace std;
 
 int main(void) {
+	clock_t t1, t2, time;
 	int NIMX, NIMY, NIMZ;
 	NIMX = 500;
 	NIMY = 500;
@@ -25,7 +27,7 @@ int main(void) {
 	int Ngatx = 100;
 	int Ngaty = 5;
 
-	int NSTEP = 2000;
+	int NSTEP = 1000;
 	float DELTATT = 1e-3;
 	int sampgat = 2; //tsamp = sampgat*Deltat
 	int IT_OUTPUT = 200;
@@ -47,11 +49,11 @@ int main(void) {
 				ccp[ijk] = 3300;
 				ccs[ijk] = 3300 / 1.732;
 				crho[ijk] = 3000;
-				if (k >= 50) {
+				/*if (k >= 50) {
 					ccp[ijk] = 2000;
 					ccs[ijk] = 2000 / 1.732;
 					crho[ijk] = 1700;
-				}
+				}*/
 			}
 		}
 	}
@@ -66,280 +68,73 @@ int main(void) {
 	int ISOURCEE, KSOURCEE, JSOURCEE;
 	ISOURCEE = DIMX / 2;
 	JSOURCEE = DIMY / 2;
-	KSOURCEE = 5;
+	KSOURCEE = 11;
 	float ANGLE_FORCEE = 0;
 	float PI = 3.141592653589793238462643;
 	float DEGREES_TO_RADIANSS = PI / 180;
 	float NPOWER = 2;
+
 	float K_MAX_PML = 1;
 	float ALPHA_MAX_PML = 2 * PI*(f0 / 2);
 
 	float *cvx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cvx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cvy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cvy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cvz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cvz[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmaxx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmaxx[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmaxy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmaxy[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmayy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmayy[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmazz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmazz[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmaxz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmaxz[ijk] = 0;
-			}
-		}
-	}
-
 	float *csigmayz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				csigmayz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvx_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvx_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvx_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvx_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvx_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvx_dz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvy_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvy_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvy_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvy_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvy_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvy_dz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvz_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvz_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvz_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvz_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dvz_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dvz_dz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmaxx_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmaxx_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmayy_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmayy_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmazz_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmazz_dz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmaxy_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmaxy_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmaxy_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmaxy_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmaxz_dx = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmaxz_dx[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmaxz_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmaxz_dz[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmayz_dy = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	for (int k = 0; k < DIMZ; k++) {
-		for (int j = 0; j < DIMY; j++) {
-			for (int i = 0; i < DIMX; i++) {
-				int ijk = i + j*NIMX + k*NIMX*NIMY;
-				cmemory_dsigmayz_dy[ijk] = 0;
-			}
-		}
-	}
-
 	float *cmemory_dsigmayz_dz = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
 	for (int k = 0; k < DIMZ; k++) {
 		for (int j = 0; j < DIMY; j++) {
 			for (int i = 0; i < DIMX; i++) {
 				int ijk = i + j*NIMX + k*NIMX*NIMY;
+				cvx[ijk] = 0;
+				cvy[ijk] = 0;
+				cvz[ijk] = 0;
+				csigmaxx[ijk] = 0;
+				csigmaxy[ijk] = 0;
+				csigmayy[ijk] = 0;
+				csigmazz[ijk] = 0;
+				csigmaxz[ijk] = 0;
+				csigmayz[ijk] = 0;
+				cmemory_dvx_dx[ijk] = 0;
+				cmemory_dvx_dy[ijk] = 0;
+				cmemory_dvx_dz[ijk] = 0;
+				cmemory_dvz_dz[ijk] = 0;
+				cmemory_dvz_dy[ijk] = 0;
+				cmemory_dvz_dx[ijk] = 0;
+				cmemory_dvy_dz[ijk] = 0;
+				cmemory_dvy_dy[ijk] = 0;
+				cmemory_dvy_dx[ijk] = 0;
 				cmemory_dsigmayz_dz[ijk] = 0;
+				cmemory_dsigmayz_dy[ijk] = 0;
+				cmemory_dsigmaxz_dz[ijk] = 0;
+				cmemory_dsigmaxz_dx[ijk] = 0;
+				cmemory_dsigmaxy_dy[ijk] = 0;
+				cmemory_dsigmaxy_dx[ijk] = 0;
+				cmemory_dsigmazz_dz[ijk] = 0;
+				cmemory_dsigmayy_dy[ijk] = 0;
+				cmemory_dsigmaxx_dx[ijk] = 0;
 			}
 		}
 	}
@@ -577,6 +372,7 @@ int main(void) {
 		}
 	}
 
+	t1 = clock();
 	for (int it = 1; it <= NSTEP; it++) {
 		//sigmaxyz
 		for (int k = 2; k <= NIMZ; k++) {
@@ -806,37 +602,36 @@ int main(void) {
 		}
 
 		//addsource
-		for (int k = 0; k <= NIMZ; k++) {
-			for (int j = 0; j <= NIMY; j++) {
-				for (int i = 0; i <= NIMX; i++) {
-					if ((i == ISOURCEE) && (j == JSOURCEE) && (k = KSOURCEE)) {
-						int offset = i + j*NIMX + k*NIMX * NIMY;
-						float lambdaplus2mu = crho[offset] * ccp[offset] * ccp[offset];
-						float a = PI * PI * f0 * f0;
-						float t = float(it - 1)*DELTATT;
-						float source_term = -factor * 2.0*a*(t - t0)*expf(-a*powf((t - t0), 2));
-						float force_x = sinf(ANGLE_FORCEE * DEGREES_TO_RADIANSS)*source_term;
-						float force_y = cosf(ANGLE_FORCEE * DEGREES_TO_RADIANSS)*source_term;
+		int lesource = ISOURCEE + JSOURCEE * NIMX + KSOURCEE * NIMX * NIMY;
+		cout << endl << lesource;
+		float lambdaplus2mu = crho[lesource] * ccp[lesource] * ccp[lesource];
+		float a = PI * PI * f0 * f0;
+		float t = float(it - 1)*DELTATT;
+		float source_term = -factor * 2.0*a*(t - t0)*expf(-a*powf((t - t0), 2));
+		float force_x = sinf(ANGLE_FORCEE * DEGREES_TO_RADIANSS)*source_term;
+		float force_y = cosf(ANGLE_FORCEE * DEGREES_TO_RADIANSS)*source_term;
 
-						/*earthquake event source
-						vx[offset] = vx[offset] + force_x*DELTAT[0] / ((rho[offset] + rho[left]) / 2);
-						vy[offset] = vy[offset] + force_y*DELTAT[0] / ((rho[offset] + rho[ytop]) / 2);
-						*/
+		/*earthquake event source
+		vx[offset] = vx[offset] + force_x*DELTAT[0] / ((rho[offset] + rho[left]) / 2);
+		vy[offset] = vy[offset] + force_y*DELTAT[0] / ((rho[offset] + rho[ytop]) / 2);
+		*/
 
-						/*explosives source*/
-						csigmaxx[offset] = csigmaxx[offset] + force_x*DELTATT * lambdaplus2mu;
-						csigmayy[offset] = csigmayy[offset] + force_x*DELTATT * lambdaplus2mu;
-						csigmazz[offset] = csigmazz[offset] + force_y*DELTATT * lambdaplus2mu;
-					}
-				}
-			}
-		}
+		/*explosives source*/
+		csigmaxx[lesource] = csigmaxx[lesource] + force_x*DELTATT * lambdaplus2mu;
+		csigmayy[lesource] = csigmayy[lesource] + force_x*DELTATT * lambdaplus2mu;
+		csigmazz[lesource] = csigmazz[lesource] + force_y*DELTATT * lambdaplus2mu;
 
+		//sampling
 		if (fmod(it, sampgat) == 0) {
+			cout << endl << it;
 			char nmfile4[20], nmfile5[20], nmfile6[20];
 
 			int xlen = NIMX / Ngatx;
 			int ylen = (NIMY - (2 * NPOINTS_PML)) / Ngaty;
+			if ((xlen <= 0) || (ylen <= 0)) {
+				cout << endl << "jumlah receiver lebih banyak dari dimensi grid";
+				return 0;
+			}
 			cout << endl << xlen << " " << ylen;
 			//sprintf(nmfile4, "rechorvx.bin");
 			//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
@@ -877,6 +672,14 @@ int main(void) {
 
 		if (fmod(it, IT_OUTPUT) == 0){
 			//save to file
+			t2 = clock_t();
+			time = t2 - t1;
+			char nmfilet[20];
+			sprintf_s(nmfilet, "time%05i.ttt", it);
+			ofstream outseya1t(nmfilet);
+			outseya1t << time << " " << CLOCKS_PER_SEC;
+			outseya1t << endl << ((float)time) / CLOCKS_PER_SEC;
+
 			char nmfile1[20]; char nmfile2[20]; char nmfile3[20];
 
 			sprintf_s(nmfile1, "vz%05i.bin", it);
@@ -922,5 +725,31 @@ int main(void) {
 		}
 	}//end it
 
-	free(cvx); free(cvy); free(cvz);
+	free(cvx); 
+	free(cvy); 
+	free(cvz); 
+	free(csigmaxx); 
+	free(csigmaxy);
+	free(csigmaxz);
+	free(csigmayy);
+	free(csigmayz);
+	free(csigmazz);
+	free(cmemory_dvz_dz);
+	free(cmemory_dvz_dy);
+	free(cmemory_dvz_dx);
+	free(cmemory_dvy_dz);
+	free(cmemory_dvy_dy);
+	free(cmemory_dvy_dx);
+	free(cmemory_dvx_dz);
+	free(cmemory_dvx_dy);
+	free(cmemory_dvx_dx);
+	free(cmemory_dsigmazz_dz);
+	free(cmemory_dsigmayz_dz);
+	free(cmemory_dsigmayz_dy);
+	free(cmemory_dsigmayy_dy);
+	free(cmemory_dsigmaxz_dz);
+	free(cmemory_dsigmaxz_dx);
+	free(cmemory_dsigmaxy_dy);
+	free(cmemory_dsigmaxy_dx);
+	free(cmemory_dsigmaxx_dx);
 }
