@@ -1222,6 +1222,12 @@ int main(void) {
 					HANDLE_ERROR(cudaMalloc((void**)&memory_dsigmayz_dz, dd*sizeof(float)));
 					HANDLE_ERROR(cudaMemcpy(memory_dsigmayz_dz, tempmemory_dsigmayz_dz1, sizeof(float)*dd, cudaMemcpyHostToDevice));
 					free(tempmemory_dsigmayz_dz1);
+
+					//run fungsi
+
+					//copy perslice -> total
+
+					//output file
 				}
 			}
 		}
