@@ -44,9 +44,9 @@ __global__ void kersigmaxyz(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *
 	int right = offset + 1;
 	int ybottom = offset - DDIMX[0];
 	int zbottom = offset - DDIMX[0] * DDIMY[0];
-	int iglobal = index_x + ISLBEGIN[0];
-	int jglobal = index_y + JSLBEGIN[0];
-	int kglobal = index_z + KSLBEGIN[0];
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
 
 
 	if ((index_z >= 2) && (index_z <= DDIMZ[0])) {
@@ -95,9 +95,9 @@ __global__ void kersigmaxy(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *c
 	int offset = index_x + index_y*DDIMX[0] + index_z*DDIMX[0] * DDIMZ[0];
 	int left = offset - 1;
 	int ytop = offset + DDIMX[0];
-	int iglobal = index_x + ISLBEGIN[0];
-	int jglobal = index_y + JSLBEGIN[0];
-	int kglobal = index_z + KSLBEGIN[0];
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
 
 
 	if ((index_z >= 1) && (index_z <= DDIMZ[0])) {
@@ -139,9 +139,9 @@ __global__ void kersigmaxzyz(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float 
 	int left = offset - 1;
 	int ztop = offset + DDIMX[0] * DDIMY[0];
 	int ytop = offset + DDIMX[0];
-	int iglobal = index_x + ISLBEGIN[0];
-	int jglobal = index_y + JSLBEGIN[0];
-	int kglobal = index_z + KSLBEGIN[0];
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
 
 
 	if ((index_z >= 1) && (index_z <= DDIMZ[0])) {
@@ -209,9 +209,9 @@ __global__ void kervxvy(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *rho,
 	int zbottom = offset - DDIMX[0] * DDIMY[0];
 	int right = offset + 1;
 	int ytop = offset + DDIMX[0];
-	int iglobal = index_x + ISLBEGIN[0];
-	int jglobal = index_y + JSLBEGIN[0];
-	int kglobal = index_z + KSLBEGIN[0];
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
 
 
 	if ((index_z >= 2) && (index_z <= DDIMZ[0])) {
@@ -277,9 +277,9 @@ __global__ void kervz(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *rho, i
 	int right = offset + 1;
 	int ybottom = offset - DDIMX[0];
 	int ztop = offset + DDIMX[0] * DDIMY[0];
-	int iglobal = index_x + ISLBEGIN[0];
-	int jglobal = index_y + JSLBEGIN[0];
-	int kglobal = index_z + KSLBEGIN[0];
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
 
 
 	if ((index_z >= 1) && (index_z <= DDIMZ[0] - 1)) {
@@ -663,7 +663,7 @@ int main(void) {
 	zorigintop = (DIMGLOBZ - 1)*DELTAZ - thickness_PML_z;
 	for (int i = 1; i <= DIMGLOBZ; i++) {
 		zval = DELTAZ*float(i - 1);
-		abscissa_in_PML = zoriginbottom - zval;//PML ZMIN
+		abscissa_in_PML = zoriginbottom - zval; //PML ZMIN
 		// disable pml zmin for free surface condition
 		if (abscissa_in_PML >= 0.0) {
 			abscissa_normalized = abscissa_in_PML / thickness_PML_y;
@@ -1286,6 +1286,15 @@ int main(void) {
 					blocks.y = DLOCALDIMY / threads.y;
 					blocks.z = DLOCALDIMZ / threads.z;
 
+					kersigmaxyz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
+					
+					kersigmaxy << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
+
+					kersigmaxzyz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
+
+					kervxvy << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
+					
+					kervz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
 
 
 					//copy perslice -> total -----------------------------------------------------------------------------------------
