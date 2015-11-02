@@ -371,7 +371,7 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(cs, tempcs, sizeof(float)*((DIMGLOBX + 1)*(DIMGLOBY + 1)*(DIMGLOBZ + 1)), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(rho, temprho, sizeof(float)*((DIMGLOBX + 1)*(DIMGLOBY + 1)*(DIMGLOBZ + 1)), cudaMemcpyHostToDevice));
 	free(tempcp); free(tempcs); free(temprho);
-	
+
 	float *DELTAT;
 	HANDLE_ERROR(cudaMalloc((void**)&DELTAT, sizeof(float)));
 	HANDLE_ERROR(cudaMemcpy(DELTAT, &DELTATT, sizeof(float), cudaMemcpyHostToDevice));
@@ -728,7 +728,7 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(DDIMGLOBX, &DIMGLOBX, sizeof(int), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(DDIMGLOBY, &DIMGLOBY, sizeof(int), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(DDIMGLOBZ, &DIMGLOBZ, sizeof(int), cudaMemcpyHostToDevice));
-	
+
 	float *tempvx = (float*)malloc(sizeof(float)*((DIMGLOBX + 1)*(DIMGLOBY + 1)*(DIMGLOBZ + 1)));
 	float *tempvy = (float*)malloc(sizeof(float)*((DIMGLOBX + 1)*(DIMGLOBY + 1)*(DIMGLOBZ + 1)));
 	float *tempvz = (float*)malloc(sizeof(float)*((DIMGLOBX + 1)*(DIMGLOBY + 1)*(DIMGLOBZ + 1)));
@@ -874,7 +874,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk1 = i + j*DIMX + k*DIMX*DIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvx1[ijk1] = tempvx[ijk2];
 							}
 						}
@@ -889,7 +889,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvy1[ijk] = tempvy[ijk2];
 							}
 						}
@@ -904,7 +904,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvz1[ijk] = tempvz[ijk2];
 							}
 						}
@@ -919,7 +919,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxx1[ijk] = tempsigmaxx[ijk2];
 							}
 						}
@@ -934,7 +934,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxy1[ijk] = tempsigmaxy[ijk2];
 							}
 						}
@@ -949,7 +949,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmayy1[ijk] = tempsigmayy[ijk2];
 							}
 						}
@@ -964,7 +964,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmazz1[ijk] = tempsigmazz[ijk2];
 							}
 						}
@@ -979,7 +979,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxz1[ijk] = tempsigmaxz[ijk2];
 							}
 						}
@@ -994,7 +994,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmayz1[ijk] = tempsigmayz[ijk2];
 							}
 						}
@@ -1009,7 +1009,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dx1[ijk] = tempmemory_dvx_dx[ijk2];
 							}
 						}
@@ -1024,7 +1024,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dy1[ijk] = tempmemory_dvx_dy[ijk2];
 							}
 						}
@@ -1039,7 +1039,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dz1[ijk] = tempmemory_dvx_dz[ijk2];
 							}
 						}
@@ -1054,7 +1054,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dx1[ijk] = tempmemory_dvy_dx[ijk2];
 							}
 						}
@@ -1069,7 +1069,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dy1[ijk] = tempmemory_dvy_dy[ijk2];
 							}
 						}
@@ -1084,7 +1084,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dz1[ijk] = tempmemory_dvy_dz[ijk2];
 							}
 						}
@@ -1099,7 +1099,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dx1[ijk] = tempmemory_dvz_dx[ijk2];
 							}
 						}
@@ -1114,7 +1114,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dy1[ijk] = tempmemory_dvz_dy[ijk2];
 							}
 						}
@@ -1129,7 +1129,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dz1[ijk] = tempmemory_dvz_dz[ijk2];
 							}
 						}
@@ -1144,7 +1144,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxx_dx1[ijk] = tempmemory_dsigmaxx_dx[ijk2];
 							}
 						}
@@ -1159,7 +1159,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayy_dy1[ijk] = tempmemory_dsigmayy_dy[ijk2];
 							}
 						}
@@ -1174,7 +1174,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmazz_dz1[ijk] = tempmemory_dsigmazz_dz[ijk2];
 							}
 						}
@@ -1189,7 +1189,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxy_dx1[ijk] = tempmemory_dsigmaxy_dx[ijk2];
 							}
 						}
@@ -1204,7 +1204,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxy_dy1[ijk] = tempmemory_dsigmaxy_dy[ijk2];
 							}
 						}
@@ -1219,7 +1219,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxz_dx1[ijk] = tempmemory_dsigmaxz_dx[ijk2];
 							}
 						}
@@ -1234,7 +1234,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxz_dz1[ijk] = tempmemory_dsigmaxz_dz[ijk2];
 							}
 						}
@@ -1249,7 +1249,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayz_dy1[ijk] = tempmemory_dsigmayz_dy[ijk2];
 							}
 						}
@@ -1264,7 +1264,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayz_dz1[ijk] = tempmemory_dsigmayz_dz[ijk2];
 							}
 						}
@@ -1287,13 +1287,13 @@ int main(void) {
 					blocks.z = DLOCALDIMZ / threads.z;
 
 					kersigmaxyz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
-					
+
 					kersigmaxy << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
 
 					kersigmaxzyz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
 
 					kervxvy << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
-					
+
 					kervz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
 
 
@@ -1305,7 +1305,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvx[ijk2] = tempvx1[ijk];
 							}
 						}
@@ -1319,7 +1319,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvy[ijk2] = tempvy1[ijk];
 							}
 						}
@@ -1333,7 +1333,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempvz[ijk2] = tempvz1[ijk];
 							}
 						}
@@ -1347,7 +1347,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxx[ijk2] = tempsigmaxx1[ijk];
 							}
 						}
@@ -1361,7 +1361,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxy[ijk2] = tempsigmaxy1[ijk];
 							}
 						}
@@ -1375,7 +1375,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmayy[ijk2] = tempsigmayy1[ijk];
 							}
 						}
@@ -1389,7 +1389,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmazz[ijk2] = tempsigmazz1[ijk];
 							}
 						}
@@ -1403,7 +1403,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmaxz[ijk2] = tempsigmaxz1[ijk];
 							}
 						}
@@ -1417,7 +1417,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempsigmayz[ijk2] = tempsigmayz1[ijk];
 							}
 						}
@@ -1431,7 +1431,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dx[ijk2] = tempmemory_dvx_dx1[ijk];
 							}
 						}
@@ -1445,7 +1445,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dy[ijk2] = tempmemory_dvx_dy1[ijk];
 							}
 						}
@@ -1459,7 +1459,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvx_dz[ijk2] = tempmemory_dvx_dz1[ijk];
 							}
 						}
@@ -1473,7 +1473,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dx[ijk2] = tempmemory_dvy_dx1[ijk];
 							}
 						}
@@ -1487,7 +1487,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dy[ijk2] = tempmemory_dvy_dy1[ijk];
 							}
 						}
@@ -1501,7 +1501,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvy_dz[ijk2] = tempmemory_dvy_dz1[ijk];
 							}
 						}
@@ -1515,7 +1515,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dx[ijk2] = tempmemory_dvz_dx1[ijk];
 							}
 						}
@@ -1529,7 +1529,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dy[ijk2] = tempmemory_dvz_dy1[ijk];
 							}
 						}
@@ -1543,7 +1543,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dvz_dz[ijk2] = tempmemory_dvz_dz1[ijk];
 							}
 						}
@@ -1557,7 +1557,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxx_dx[ijk2] = tempmemory_dsigmaxx_dx1[ijk];
 							}
 						}
@@ -1571,7 +1571,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayy_dy[ijk2] = tempmemory_dsigmayy_dy1[ijk];
 							}
 						}
@@ -1585,7 +1585,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmazz_dz[ijk2] = tempmemory_dsigmazz_dz1[ijk];
 							}
 						}
@@ -1599,7 +1599,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxy_dx[ijk2] = tempmemory_dsigmaxy_dx1[ijk];
 							}
 						}
@@ -1613,7 +1613,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxy_dy[ijk2] = tempmemory_dsigmaxy_dy1[ijk];
 							}
 						}
@@ -1627,7 +1627,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxz_dx[ijk2] = tempmemory_dsigmaxz_dx1[ijk];
 							}
 						}
@@ -1641,7 +1641,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmaxz_dz[ijk2] = tempmemory_dsigmaxz_dz1[ijk];
 							}
 						}
@@ -1655,7 +1655,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayz_dy[ijk2] = tempmemory_dsigmayz_dy1[ijk];
 							}
 						}
@@ -1669,7 +1669,7 @@ int main(void) {
 						for (int j = 0; j <= DLOCALDIMY; j++) {
 							for (int i = 0; i <= DLOCALDIMX; i++) {
 								int ijk = i + j*DLOCALDIMX + k*DLOCALDIMX*DLOCALDIMY;
-								int ijk2 = (i + ii - 1) + (j + jj - 1)*DIMGLOBX + (k + kk - 1)*DIMGLOBX*DIMGLOBY;
+								int ijk2 = (i + islbegin - 1) + (j + jslbegin - 1)*DIMGLOBX + (k + kslbegin - 1)*DIMGLOBX*DIMGLOBY;
 								tempmemory_dsigmayz_dz[ijk2] = tempmemory_dsigmayz_dz1[ijk];
 							}
 						}
