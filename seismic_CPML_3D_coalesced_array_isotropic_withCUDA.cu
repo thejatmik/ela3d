@@ -308,10 +308,66 @@ __global__ void kervz(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *rho, i
 
 }
 
+__global__ void keraddSource(int *ISLBEGIN, int *JSLBEGIN, int *KSLBEGIN, float *sigmaxx, float *sigmayy, float *sigmazz, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *ISOURCE, int *JSOURCE, int *KSOURCE, float *ANGLE_FORCE, float *DEGREES_TO_RADIANS, float *DELTAT, float *factor, float *t0, float *ff0, float *DPI, float *vx, float *vy) {
+	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
+	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
+	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
+
+	int blkId = blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
+	int aaaa = blockDim.x * blockDim.y * blockDim.z;
+	int bbbb = threadIdx.z * (blockDim.x * blockDim.y);
+	int cccc = (threadIdx.y * blockDim.x) + threadIdx.x;
+	int offset = index_x + index_y*DDIMX[0] + index_z*DDIMX[0] * DDIMY[0];
+	int left = offset - 1;
+	int ytop = offset + DDIMX[0];
+
+	int iglobal = index_x + ISLBEGIN[0] - 1;
+	int jglobal = index_y + JSLBEGIN[0] - 1;
+	int kglobal = index_z + KSLBEGIN[0] - 1;
+
+	float lambdaplus2mu = rho[offset] * cp[offset] * cp[offset];
+
+	float a = DPI[0] * DPI[0] * ff0[0] * ff0[0];
+	float t = float(iit[0] - 1)*DELTAT[0];
+
+	//Gaussian
+	//float source_term = factor * expf(-a*powf((t - t0), 2));
+
+	//first derivative of a Gaussian
+	float source_term = -factor[0] * 2.0*a*(t - t0[0])*expf(-a*powf((t - t0[0]), 2));
+
+	//Ricker source time function(second derivative of a Gaussian)
+	//float source_term = factor*(1.0 - 2.0*a*powf((t - t0), 2))*expf(-a*powf(t - t0, 2));
+
+	float force_x = sinf(ANGLE_FORCE[0] * DEGREES_TO_RADIANS[0])*source_term;
+	float force_y = cosf(ANGLE_FORCE[0] * DEGREES_TO_RADIANS[0])*source_term;
+
+	if (kglobal == KSOURCE[0]) {
+		if (jglobal == JSOURCE[0]) {
+			if (iglobal == ISOURCE[0]) {
+				/*earthquake event source
+				vx[offset] = vx[offset] + force_x*DELTAT[0] / ((rho[offset] + rho[left]) / 2);
+				vy[offset] = vy[offset] + force_y*DELTAT[0] / ((rho[offset] + rho[ytop]) / 2);
+				*/
+
+				/*explosives source*/
+				sigmaxx[offset] = sigmaxx[offset] + force_x*DELTAT[0] * lambdaplus2mu;
+				sigmayy[offset] = sigmayy[offset] + force_x*DELTAT[0] * lambdaplus2mu;
+				sigmazz[offset] = sigmazz[offset] + force_y*DELTAT[0] * lambdaplus2mu;
+			}
+		}
+	}
+}
+
 int main(void) {
 	int DIMGLOBX = 1400;
 	int DIMGLOBY = 1400;
 	int DIMGLOBZ = 200;
+
+	int Ngatx = 100; //jml receiver x
+	int Ngaty = 100; //jml receiver y
+	int Dgatz = 15; //kedalaman receiver
+
 	int *DDIMGLOBX, *DDIMGLOBY, *DDIMGLOBZ;
 	HANDLE_ERROR(cudaMalloc((void**)&DDIMGLOBX, sizeof(int)));
 	HANDLE_ERROR(cudaMalloc((void**)&DDIMGLOBY, sizeof(int)));
@@ -1296,6 +1352,7 @@ int main(void) {
 
 					kervz << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
 
+					keraddSource << <blocks, threads >> >(ISLBEGIN, JSLBEGIN, KSLBEGIN, sigmaxx, sigmayy, sigmazz, cp, cs, rho, DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy);
 
 					//copy perslice -> total -----------------------------------------------------------------------------------------
 					float *tempvx1 = (float*)malloc(sizeof(float)*dd);
@@ -1676,9 +1733,98 @@ int main(void) {
 					}
 					free(tempmemory_dsigmayz_dz1);
 
-					//output file -----------------------------------------------------------------------------------------------------------------------
 				}
 			}
+		}
+		//output file gather -----------------------------------------------------------------------------------------------------------------------
+		if (fmod(it, sampgat) == 0) {
+			char nmfile4[20], nmfile5[20], nmfile6[20];
+
+			int xlen = DIMGLOBX / Ngatx;
+			int ylen = (DIMGLOBY- (2 * NPOINTS_PML)) / Ngaty;
+			cout << endl << xlen << " " << ylen;
+			//sprintf(nmfile4, "rechorvx.bin");
+			//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
+			sprintf(nmfile4, "rechorvx.txt");
+			std::ofstream fout4;
+			fout4.open(nmfile4, ios::app);
+			for (int j = 0; j <= DIMGLOBY; j += ylen) {
+				for (int i = 0; i <= DIMGLOBX; i += xlen) {
+					int kk = i + j*DIMGLOBX + Dgatz*DIMGLOBX*DIMGLOBY;
+					fout4 << tempvx[kk] << " ";
+				}
+			}fout4 << endl;
+
+			//sprintf(nmfile5, "rechorvy.bin");
+			//std::ofstream fout5(nmfile5, ios::out | ios::app | ios::binary);
+			sprintf(nmfile5, "rechorvy.txt");
+			std::ofstream fout5;
+			fout5.open(nmfile5, ios::app);
+			for (int j = 0; j <= DIMGLOBY; j += ylen) {
+				for (int i = 0; i <= DIMGLOBX; i += xlen) {
+					int kk = i + j*DIMGLOBX + Dgatz*DIMGLOBX*DIMGLOBY;
+					fout5 << tempvy[kk] << " ";
+				}
+			}fout5 << endl;
+
+			//sprintf(nmfile6, "rechorvz.bin");
+			//std::ofstream fout6(nmfile6, ios::out | ios::app | ios::binary);
+			sprintf(nmfile6, "rechorvz.txt");
+			std::ofstream fout6;
+			fout6.open(nmfile6, ios::app);
+			for (int j = 0; j <= DIMGLOBY; j += ylen) {
+				for (int i = 0; i <= DIMGLOBX; i += xlen) {
+					int kk = i + j*DIMGLOBX + Dgatz*DIMGLOBX*DIMGLOBY;
+					fout6 << tempvz[kk] << " ";
+				}
+			}fout6 << endl;
+		}
+
+		//output file snap -----------------------------------------------------------------------------------------------------------------------
+		if (fmod(it, IT_OUTPUT) == 0){
+			//save to file
+			char nmfile1[20]; char nmfile2[20]; char nmfile3[20];
+
+			sprintf_s(nmfile1, "vz%05i.bin", it);
+			std::ofstream fout1(nmfile1, ios::out | ios::binary);
+			//sprintf_s(nmfile1, "vz%05i.txt", it);
+			//std::ofstream fout1(nmfile1, ios::out);
+			for (int kk = 0; kk < DIMZ; kk++) {
+				for (int jj = 0; jj < DIMY; jj++) {
+					for (int ii = 0; ii < DIMX; ii++) {
+						int ijk = ii + jj*DIMX + kk*DIMX*DIMY;
+						fout1.write((char *)&tempvz[ijk], sizeof tempvz[ijk]);
+					}
+				}
+			}
+
+			sprintf_s(nmfile2, "vy%05i.bin", it);
+			std::ofstream fout2(nmfile2, ios::out | ios::binary);
+			//sprintf_s(nmfile2, "vy%05i.txt", it);
+			//std::ofstream fout2(nmfile2, ios::out);
+			for (int kk = 0; kk < DIMZ; kk++) {
+				for (int jj = 0; jj < DIMY; jj++) {
+					for (int ii = 0; ii < DIMX; ii++) {
+						int ijk = ii + jj*DIMX + kk*DIMX*DIMY;
+						fout2.write((char *)&tempvy[ijk], sizeof tempvy[ijk]);
+					}
+				}
+			}
+
+			sprintf_s(nmfile3, "vx%05i.bin", it);
+			std::ofstream fout3(nmfile3, ios::out | ios::binary);
+			//sprintf_s(nmfile3, "vx%05i.txt", it);
+			//std::ofstream fout3(nmfile3, ios::out);
+			for (int kk = 0; kk < DIMZ; kk++) {
+				for (int jj = 0; jj < DIMY; jj++) {
+					for (int ii = 0; ii < DIMX; ii++) {
+						int ijk = ii + jj*DIMX + kk*DIMX*DIMY;
+						fout3.write((char *)&tempvx[ijk], sizeof tempvx[ijk]);
+					}
+				}
+			}
+
+			//save to file END
 		}
 	}
 	return 0;
