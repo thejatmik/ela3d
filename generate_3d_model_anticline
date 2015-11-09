@@ -1,0 +1,72 @@
+clear all
+x=linspace(0,pi,201);
+y=linspace(0,pi,201);
+[X Y]=meshgrid(x);
+Z=(((sin(X)+sin(Y))/2)-0.5)/0.5;
+
+for i=1:201
+    for j=1:201
+        if (Z(i,j)<0)
+            Z(i,j)=0;
+        end
+    end
+end
+
+surface=Z;
+
+h3=101;
+d3=50;
+h2=81;
+d2=50;
+h1=61;
+d1=50;
+
+surface1=surface.*d1;
+surface2=surface.*d2;
+surface3=surface.*d3;
+
+surface1=h1-surface1;
+surface2=h2-surface2;
+surface3=h3-surface3;
+
+%surf(surface1); hold on;
+%surf(surface2); hold on;
+%surf(surface3); hold on;
+%shading interp
+%zlim([0 100]);
+%ylim([0 200]);
+%xlim([0 200]);
+
+%        vp   vs        rho
+medium1=[3000 3000/1.72 3300]; %usual = 1
+medium2=[2700 2700/1.72 2200]; %shale = 2
+medium3=[1700 1700/1.72 2500]; %sandstone = 3
+medium4=[1700 1700/1.72 2200]; %oil in sandstone = 4
+medium5=[4500 4500/1.72 3500]; %carbonate = 5
+
+model=zeros(201*201*101,1);
+
+for k=1:101
+    for j=1:201
+        for i=1:201
+            ijk=i+(j-1)*201+(k-1)*201*201;
+            model(ijk)=1;
+            if (k>surface1(i,j))
+                model(ijk)=2;
+            end
+            if (k>surface2(i,j))
+                model(ijk)=3;
+                if (k<40)
+                    model(ijk)=4;
+                end
+            end
+            if (k>surface3(i,j))
+                model(ijk)=5;
+            end
+        end
+    end
+end
+
+reshape(model,[201 201 101]);
+slice(ans, 100, 100,100)
+shading interp
