@@ -37,13 +37,6 @@ surface3=h3-surface3;
 %ylim([0 200]);
 %xlim([0 200]);
 
-%        vp   vs   rho
-medium1=[3000 1700 2800]; %usual = sandstone = 1
-medium2=[3600 1400 2300]; %caprock = shale = 2
-medium3=[3000 1700 2800]; %sandstone = 3
-medium4=[3600 1700 2800]; %oil in sandstone = 4
-medium5=[3650 1500 2450]; %source rock = shale = 5
-
 model=zeros(201*201*101,1);
 
 for k=1:101
@@ -70,3 +63,48 @@ end
 reshape(model,[201 201 101]);
 slice(ans, 100, 100,100)
 shading interp
+
+modcp=zeros(201*201*101,1);
+modcs=zeros(201*201*101,1);
+modrh=zeros(201*201*101,1);
+
+%        vp   vs   rho
+medium1=[3000 1700 2800]; %usual = sandstone = 1
+medium2=[3600 1400 2300]; %caprock = shale = 2
+medium3=[3000 1700 2800]; %sandstone = 3
+medium4=[3600 1700 2800]; %oil in sandstone = 4
+medium5=[3650 1500 2450]; %source rock = shale = 5
+
+for k=1:101
+    for j=1:201
+        for i=1:201
+            ijk=i+(j-1)*201+(k-1)*201*201;
+            if (model(ijk)==1)
+                modcp(ijk)=medium1(1);
+                modcs(ijk)=medium1(2);
+                modrh(ijk)=medium1(3);
+            end
+            if (model(ijk)==2)
+                modcp(ijk)=medium2(1);
+                modcs(ijk)=medium2(2);
+                modrh(ijk)=medium2(3);
+            end
+            if (model(ijk)==3)
+                modcp(ijk)=medium3(1);
+                modcs(ijk)=medium3(2);
+                modrh(ijk)=medium3(3);
+            end
+            if (model(ijk)==4)
+                modcp(ijk)=medium4(1);
+                modcs(ijk)=medium4(2);
+                modrh(ijk)=medium4(3);
+            end
+            if (model(ijk)==5)
+                modcp(ijk)=medium5(1);
+                modcs(ijk)=medium5(2);
+                modrh(ijk)=medium5(3);
+            end
+        end
+    end
+end
+
