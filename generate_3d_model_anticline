@@ -37,12 +37,12 @@ surface3=h3-surface3;
 %ylim([0 200]);
 %xlim([0 200]);
 
-%        vp   vs        rho
-medium1=[3000 3000/1.72 3300]; %usual = 1
-medium2=[2700 2700/1.72 2200]; %shale = 2
-medium3=[1700 1700/1.72 2500]; %sandstone = 3
-medium4=[1700 1700/1.72 2200]; %oil in sandstone = 4
-medium5=[4500 4500/1.72 3500]; %carbonate = 5
+%        vp   vs   rho
+medium1=[3000 1700 2800]; %usual = sandstone = 1
+medium2=[3600 1400 2300]; %caprock = shale = 2
+medium3=[3000 1700 2800]; %sandstone = 3
+medium4=[3600 1700 2800]; %oil in sandstone = 4
+medium5=[3650 1500 2450]; %source rock = shale = 5
 
 model=zeros(201*201*101,1);
 
