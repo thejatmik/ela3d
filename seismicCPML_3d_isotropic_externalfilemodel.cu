@@ -43,7 +43,7 @@ __global__ void kersigmaxyz(float *cp, float *cs, float *rho, float *DELTAT, int
 
 	if ((index_z >= 2) && (index_z <= DDIMZ[0])) {
 		if ((index_y >= 2) && (index_y <= DDIMY[0])) {
-			if ((index_x >= 1) && (index_z <= DDIMX[0] - 1)) {
+			if ((index_x >= 1) && (index_x <= DDIMX[0] - 1)) {
 				float vp = cp[offset];
 				float vs = cs[offset];
 				float rhos = rho[offset];
@@ -91,7 +91,7 @@ __global__ void kersigmaxy(float *cp, float *cs, float *rho, int *DDIMX, int *DD
 
 	if ((index_z >= 1) && (index_z <= DDIMZ[0])) {
 		if ((index_y >= 1) && (index_y <= DDIMY[0] - 1)) {
-			if ((index_x >= 2) && (index_z <= DDIMX[0])) {
+			if ((index_x >= 2) && (index_x <= DDIMX[0])) {
 				float vs = (cs[left] + cs[ytop]) / 2;
 				float rhos = (rho[left] + rho[ytop]) / 2;
 
@@ -133,7 +133,7 @@ __global__ void kersigmaxzyz(float *cp, float *cs, float *rho, int *DDIMX, int *
 	if ((index_z >= 1) && (index_z <= DDIMZ[0])) {
 		//sigmaxz
 		if ((index_y >= 1) && (index_y <= DDIMY[0])) {
-			if ((index_x >= 2) && (index_z <= DDIMX[0])) {
+			if ((index_x >= 2) && (index_x <= DDIMX[0])) {
 				float vs = (cs[left] + cs[ztop]) / 2;
 				float rhos = (rho[left] + rho[ztop]) / 2;
 
@@ -200,7 +200,7 @@ __global__ void kervxvy(float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *D
 	if ((index_z >= 2) && (index_z <= DDIMZ[0])) {
 		//vx
 		if ((index_y >= 2) && (index_y <= DDIMY[0])) {
-			if ((index_x >= 2) && (index_z <= DDIMX[0])) {
+			if ((index_x >= 2) && (index_x <= DDIMX[0])) {
 				float rhos = (rho[offset] + rho[left]) / 2;
 
 				float DELTAT_over_rho = DELTAT[0] / rhos;
@@ -264,7 +264,7 @@ __global__ void kervz(float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DEL
 
 	if ((index_z >= 1) && (index_z <= DDIMZ[0] - 1)) {
 		if ((index_y >= 2) && (index_y <= DDIMY[0])) {
-			if ((index_x >= 1) && (index_z <= DDIMX[0] - 1)) {
+			if ((index_x >= 1) && (index_x <= DDIMX[0] - 1)) {
 				float rhos = (rho[offset] + rho[ztop]) / 2;
 
 				float DELTAT_over_rho = DELTAT[0] / rhos;
@@ -362,9 +362,9 @@ __global__ void kerGather(int *ISOURCE, int *JSOURCE, int *KSOURCE, int *DDIMX, 
 
 int main(void) {
 	int NIMX, NIMY, NIMZ;
-	NIMX = 201;
-	NIMY = 201;
-	NIMZ = 101;
+	NIMX = 200;
+	NIMY = 200;
+	NIMZ = 100;
 
 	int DIMX, DIMY, DIMZ;
 	DIMX = NIMX + 1; DIMY = NIMY + 1; DIMZ = NIMZ + 1;
@@ -394,7 +394,7 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(gatvz, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 
 	int NSTEP = 1000;
-	float DELTATT = 1e-3;
+	float DELTATT = 1e-4;
 	int sampgat = 2; //tsamp = sampgat*Deltat
 	int IT_OUTPUT = 200;
 
@@ -420,7 +420,10 @@ int main(void) {
 
 	line = "modelcp.bin";
 	char *inname1 = const_cast<char*>(line.c_str());
-	FILE* file = fopen(inname1, "rb"); 
+	FILE* file = fopen(inname1, "rb");
+	if (file != NULL){
+		cout << endl << "Model Vp";
+	}
 	for (int k = 0; k < DIMZ; k++) {
 		for (int j = 0; j < DIMY; j++) {
 			for (int i = 0; i < DIMX; i++) {
@@ -431,9 +434,13 @@ int main(void) {
 			}
 		}
 	}
+
 	line = "modelcs.bin";
 	char *inname2 = const_cast<char*>(line.c_str());
 	FILE* file2 = fopen(inname2, "rb");
+	if (file2 != NULL){
+		cout << endl << "Model Vs";
+	}
 	for (int k = 0; k < DIMZ; k++) {
 		for (int j = 0; j < DIMY; j++) {
 			for (int i = 0; i < DIMX; i++) {
@@ -444,9 +451,13 @@ int main(void) {
 			}
 		}
 	}
+
 	line = "modelrh.bin";
 	char *inname3 = const_cast<char*>(line.c_str());
 	FILE* file3 = fopen(inname3, "rb");
+	if (file3 != NULL){
+		cout << endl << "Model Rho";
+	}
 	for (int k = 0; k < DIMZ; k++) {
 		for (int j = 0; j < DIMY; j++) {
 			for (int i = 0; i < DIMX; i++) {
@@ -470,6 +481,7 @@ int main(void) {
 			}
 		}
 	}
+
 	float *cp, *cs, *rho;
 	HANDLE_ERROR(cudaMalloc((void**)&cp, DIMX*DIMY*DIMZ*sizeof(float)));
 	HANDLE_ERROR(cudaMalloc((void**)&cs, DIMX*DIMY*DIMZ*sizeof(float)));
@@ -952,7 +964,7 @@ int main(void) {
 	thickness_PML_z = NPOINTS_PML * DELTAZ;
 	Rcoef = 0.001;
 
-	float vpml = 3000;
+	float vpml = 3600;
 	d0_x = -(NPOWER + 1) * vpml * logf(Rcoef) / (2.0 * thickness_PML_x);
 	d0_y = -(NPOWER + 1) * vpml * logf(Rcoef) / (2.0 * thickness_PML_y);
 	d0_z = -(NPOWER + 1) * vpml * logf(Rcoef) / (2.0 * thickness_PML_z);
@@ -1219,13 +1231,13 @@ int main(void) {
 
 	for (int it = 1; it <= NSTEP; it++) {
 		kersigmaxyz << <blocks, threads >> >(cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
-		cout << endl << "Sig!";
+		
 		kersigmaxy << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
 
 		kersigmaxzyz << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
 
 		kervxvy << <blocks, threads >> >(rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
-		cout << endl << "Vi!";
+		
 		kervz << <blocks, threads >> >(rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
 
 		kerGather << <blocks, threads >> >(ISOURCE, JSOURCE, KSOURCE, DDIMX, DDIMY, DDIMZ, gatvx, gatvz, gatvy, DDIMX, DDIMY, DDIMZ, gatx, gaty, DPML, vx, vy, vz);
@@ -1238,7 +1250,6 @@ int main(void) {
 
 			int xlen = NIMX / Ngatx;
 			int ylen = (NIMY - (2 * NPOINTS_PML)) / Ngaty;
-			cout << endl << xlen << " " << ylen;
 			HANDLE_ERROR(cudaMemcpy(tempgat, gatvx, sizeof(float)*(DIMX*DIMY), cudaMemcpyDeviceToHost));
 			//sprintf(nmfile4, "rechorvx.bin");
 			//std::ofstream fout4(nmfile4, ios::out | ios::app | ios::binary);
@@ -1298,6 +1309,16 @@ int main(void) {
 						fout1.write((char *)&tempvz[ijk], sizeof tempvz[ijk]);
 					}
 				}
+			}
+			for (int kk = 0; kk < DIMZ; kk+=10) {
+				for (int jj = 0; jj < DIMY; jj+=10) {
+					for (int ii = 0; ii < DIMX; ii+=10) {
+						int ijk = ii + jj*DIMX + kk*DIMX*DIMY;
+						cout << tempvz[ijk] << " ";
+					}
+					cout << endl;
+				}
+				cout << endl;
 			}
 
 			sprintf_s(nmfile2, "vy%05i.bin", it);
