@@ -469,6 +469,22 @@ int main(void) {
 		}
 	}
 	
+	for (int k = 0; k < (DIMZ); k++) {
+		for (int j = 0; j < (DIMY); j++) {
+			for (int i = 0; i < (DIMX); i++) {
+				int ijk = i + j*DIMX + k*DIMX*DIMY;
+				tempcp[ijk] = 3300;
+				tempcs[ijk] = 3300 / 1.732;
+				temprho[ijk] = 3000;
+				if (k >= 50) {
+					tempcp[ijk] = 2000;
+					tempcs[ijk] = 2000 / 1.732;
+					temprho[ijk] = 1700;
+				}
+			}
+		}
+	}
+	
 	char nmfilet[20];
 	sprintf_s(nmfilet, "tesfile.bin");
 	std::ofstream foutt(nmfilet, ios::out | ios::binary);
