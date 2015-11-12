@@ -364,14 +364,14 @@ int main(void) {
 	int NIMX, NIMY, NIMZ;
 	NIMX = 200;
 	NIMY = 200;
-	NIMZ = 100;
+	NIMZ = 200;
 
 	int DIMX, DIMY, DIMZ;
 	DIMX = NIMX + 1; DIMY = NIMY + 1; DIMZ = NIMZ + 1;
 
 	// jml receiver = ((gatx+1)*(gaty+1))
-	int Ngatx = 100;
-	int Ngaty = 5;
+	int Ngatx = 200;
+	int Ngaty = 10;
 	int *gatx, *gaty;
 	HANDLE_ERROR(cudaMalloc((void**)&gatx, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpy(gatx, &Ngatx, sizeof(int), cudaMemcpyHostToDevice));
@@ -393,9 +393,9 @@ int main(void) {
 	HANDLE_ERROR(cudaMemcpy(gatvy, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 	HANDLE_ERROR(cudaMemcpy(gatvz, tempgat, sizeof(float)*(DIMX*DIMY), cudaMemcpyHostToDevice));
 
-	int NSTEP = 1000;
-	float DELTATT = 1e-4;
-	int sampgat = 2; //tsamp = sampgat*Deltat
+	int NSTEP = 2000;
+	float DELTATT = 1e-3;
+	int sampgat = 1; //tsamp = sampgat*Deltat
 	int IT_OUTPUT = 200;
 
 	int DELTAX, DELTAY, DELTAZ;
@@ -415,7 +415,7 @@ int main(void) {
 	float *tempcp = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
 	float *tempcs = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
 	float *temprho = (float*)malloc(sizeof(float)*(DIMX*DIMY*DIMZ));
-	
+
 	std::string line;
 
 	line = "modelcp.bin";
@@ -481,7 +481,7 @@ int main(void) {
 			}
 		}
 	}
-
+	
 	float *cp, *cs, *rho;
 	HANDLE_ERROR(cudaMalloc((void**)&cp, DIMX*DIMY*DIMZ*sizeof(float)));
 	HANDLE_ERROR(cudaMalloc((void**)&cs, DIMX*DIMY*DIMZ*sizeof(float)));
