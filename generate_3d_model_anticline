@@ -14,12 +14,12 @@ end
 
 surface=Z;
 
-h3=101;
-d3=50;
-h2=81;
-d2=50;
-h1=61;
-d1=50;
+h3=201;
+d3=100;
+h2=161;
+d2=100;
+h1=121;
+d1=100;
 
 surface1=surface.*d1;
 surface2=surface.*d2;
@@ -33,13 +33,13 @@ surface3=h3-surface3;
 %surf(surface2); hold on;
 %surf(surface3); hold on;
 %shading interp
-%zlim([0 100]);
+%zlim([0 200]);
 %ylim([0 200]);
 %xlim([0 200]);
 
-model=zeros(201*201*101,1);
+model=zeros(201*201*201,1);
 
-for k=1:101
+for k=1:201
     for j=1:201
         for i=1:201
             ijk=i+(j-1)*201+(k-1)*201*201;
@@ -49,7 +49,7 @@ for k=1:101
             end
             if (k>surface2(i,j))
                 model(ijk)=3;
-                if (k<40)
+                if (k<80)
                     model(ijk)=4;
                 end
             end
@@ -60,13 +60,13 @@ for k=1:101
     end
 end
 
-reshape(model,[201 201 101]);
+reshape(model,[201 201 201]);
 slice(ans, 100, 100,100)
 shading interp
 
-modcp=zeros(201*201*101,1);
-modcs=zeros(201*201*101,1);
-modrh=zeros(201*201*101,1);
+modcp=zeros(201*201*201,1);
+modcs=zeros(201*201*201,1);
+modrh=zeros(201*201*201,1);
 
 %        vp   vs   rho
 medium1=[3000 1700 2800]; %usual = sandstone = 1
@@ -75,7 +75,7 @@ medium3=[3000 1700 2800]; %sandstone = 3
 medium4=[3600 1700 2800]; %oil in sandstone = 4
 medium5=[3650 1500 2450]; %source rock = shale = 5
 
-for k=1:101
+for k=1:201
     for j=1:201
         for i=1:201
             ijk=i+(j-1)*201+(k-1)*201*201;
