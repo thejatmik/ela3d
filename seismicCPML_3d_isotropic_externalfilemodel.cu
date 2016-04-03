@@ -1,3 +1,134 @@
+/*
+!
+! SEISMIC_CPML Version 1.1.1, November 2009.
+!
+! Copyright Universite de Pau et des Pays de l'Adour, CNRS and INRIA, France.
+! Contributor: Dimitri Komatitsch, komatitsch aT lma DOT cnrs-mrs DOT fr
+!
+! This software is a computer program whose purpose is to solve
+! the three-dimensional isotropic elastic wave equation
+! using a finite-difference method with Convolutional Perfectly Matched
+! Layer (C-PML) conditions.
+!
+! This software is a computer program whose purpose is to solve
+! the two-dimensional viscoelastic anisotropic or poroelastic wave equation
+! using a spectral-element method (SEM).
+!
+! This program is free software; you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation; either version 2 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License along
+! with this program; if not, write to the Free Software Foundation, Inc.,
+! 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+!
+! The full text of the license is available in file "LICENSE".
+
+  program seismic_CPML_3D_iso_MPI_OpenMP
+
+! 3D elastic finite-difference code in velocity and stress formulation
+! with Convolutional-PML (C-PML) absorbing conditions.
+
+! Dimitri Komatitsch, University of Pau, France, April 2007.
+
+! The second-order staggered-grid formulation of Madariaga (1976) and Virieux (1986) is used.
+
+! The C-PML implementation is based in part on formulas given in Roden and Gedney (2000).
+!
+! Parallel implementation based on both MPI and OpenMP.
+! Type for instance "setenv OMP_NUM_THREADS 4" before running in OpenMP if you want 4 tasks.
+
+! The C-PML implementation is based in part on formulas given in Roden and Gedney (2000).
+! If you use this code for your own research, please cite some (or all) of these
+! articles:
+!
+! @ARTICLE{MaKoEz08,
+! author = {Roland Martin and Dimitri Komatitsch and Abdela\^aziz Ezziani},
+! title = {An unsplit convolutional perfectly matched layer improved at grazing
+! incidence for seismic wave equation in poroelastic media},
+! journal = {Geophysics},
+! year = {2008},
+! volume = {73},
+! pages = {T51-T61},
+! number = {4},
+! doi = {10.1190/1.2939484}}
+!
+! @ARTICLE{MaKo09,
+! author = {Roland Martin and Dimitri Komatitsch},
+! title = {An unsplit convolutional perfectly matched layer technique improved
+! at grazing incidence for the viscoelastic wave equation},
+! journal = {Geophysical Journal International},
+! year = {2009},
+! volume = {179},
+! pages = {333-344},
+! number = {1},
+! doi = {10.1111/j.1365-246X.2009.04278.x}}
+!
+! @ARTICLE{MaKoGe08,
+! author = {Roland Martin and Dimitri Komatitsch and Stephen D. Gedney},
+! title = {A variational formulation of a stabilized unsplit convolutional perfectly
+! matched layer for the isotropic or anisotropic seismic wave equation},
+! journal = {Computer Modeling in Engineering and Sciences},
+! year = {2008},
+! volume = {37},
+! pages = {274-304},
+! number = {3}}
+!
+! @ARTICLE{KoMa07,
+! author = {Dimitri Komatitsch and Roland Martin},
+! title = {An unsplit convolutional {P}erfectly {M}atched {L}ayer improved
+!          at grazing incidence for the seismic wave equation},
+! journal = {Geophysics},
+! year = {2007},
+! volume = {72},
+! number = {5},
+! pages = {SM155-SM167},
+! doi = {10.1190/1.2757586}}
+!
+! The original CPML technique for Maxwell's equations is described in:
+!
+! @ARTICLE{RoGe00,
+! author = {J. A. Roden and S. D. Gedney},
+! title = {Convolution {PML} ({CPML}): {A}n Efficient {FDTD} Implementation
+!          of the {CFS}-{PML} for Arbitrary Media},
+! journal = {Microwave and Optical Technology Letters},
+! year = {2000},
+! volume = {27},
+! number = {5},
+! pages = {334-339},
+! doi = {10.1002/1098-2760(20001205)27:5<334::AID-MOP14>3.0.CO;2-A}}
+
+! To display the results as color images in the selected 2D cut plane, use:
+!
+!   " display image*.gif " or " gimp image*.gif "
+!
+! or
+!
+!   " montage -geometry +0+3 -rotate 90 -tile 1x21 image*Vx*.gif allfiles_Vx.gif "
+!   " montage -geometry +0+3 -rotate 90 -tile 1x21 image*Vy*.gif allfiles_Vy.gif "
+!   then " display allfiles_Vx.gif " or " gimp allfiles_Vx.gif "
+!   then " display allfiles_Vy.gif " or " gimp allfiles_Vy.gif "
+!
+
+! IMPORTANT : all our CPML codes work fine in single precision as well (which is significantly faster).
+!             If you want you can thus force automatic conversion to single precision at compile time
+!             or change all the declarations and constants in the code from double precision to single.
+*/
+
+/*
+24-Oct-2015 
+conversion from Fortran90 to C++.
+replacing openMP and MPI parallelization into CUDA C++ in a single CPU unit.
+display results are not done yet
+jatmikatejasukmana@gmail.com
+*/
+
 #include "cuda_runtime.h"
 #include <cuda.h>
 #include "device_launch_parameters.h"
