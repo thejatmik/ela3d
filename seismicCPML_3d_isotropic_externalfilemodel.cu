@@ -122,9 +122,10 @@
 */
 
 /*
-24-Oct-2015 
+25-Oct-2015 
 conversion from Fortran90 to C++.
 replacing openMP and MPI parallelization into CUDA C++ in a single CPU unit.
+generate input from generate_3d_model_anticline.m
 display results are not done yet
 jatmikatejasukmana@gmail.com
 */
