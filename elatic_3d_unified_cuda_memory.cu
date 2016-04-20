@@ -26,7 +26,7 @@ static void HandleError(cudaError_t err,
 }
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
-__global__ void kersigmaxyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *cp, float *cs, float *rho, float *DELTAT, int *DDIMX, int *DDIMY, int *DDIMZ, float *memory_dvx_dx, float *memory_dvy_dy, float *memory_dvz_dz, float *a_x_half, float *a_y, float *a_z, float *b_x_half, float *b_y, float *b_z, float *K_x_half, float *K_y, float *K_z, float *sigmaxx, float *sigmayy, float *sigmazz, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy, float *vz) {
+__global__ void kersigmaxyz(float *cp, float *cs, float *rho, float *DELTAT, int *DDIMX, int *DDIMY, int *DDIMZ, float *memory_dvx_dx, float *memory_dvy_dy, float *memory_dvz_dz, float *a_x_half, float *a_y, float *a_z, float *b_x_half, float *b_y, float *b_z, float *K_x_half, float *K_y, float *K_z, float *sigmaxx, float *sigmayy, float *sigmazz, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy, float *vz) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -41,7 +41,7 @@ __global__ void kersigmaxyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *c
 	int zbottom = offset - DDIMX[0] * DDIMY[0];
 
 
-	if ((index_z >= (k2begin[0] + 1)) && (index_z < kminus1end[0])) {
+	if ((index_z >= 1) && (index_z < DDIMZ[0])) {
 		if ((index_y >= 1) && (index_y < DDIMY[0])) {
 			if ((index_x >= 0) && (index_x < DDIMX[0] - 1)) {
 				float vp = cp[offset];
@@ -75,7 +75,7 @@ __global__ void kersigmaxyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *c
 
 }
 
-__global__ void kersigmaxy(int *k2begin, int *kminus1end, int *NSIZEZ, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *memory_dvy_dx, float *memory_dvx_dy, float *a_x, float *a_y_half, float *b_x, float *b_y_half, float *K_x, float *K_y_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *vx, float *vy, float *sigmaxy) {
+__global__ void kersigmaxy(float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *memory_dvy_dx, float *memory_dvx_dy, float *a_x, float *a_y_half, float *b_x, float *b_y_half, float *K_x, float *K_y_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *vx, float *vy, float *sigmaxy) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -89,7 +89,7 @@ __global__ void kersigmaxy(int *k2begin, int *kminus1end, int *NSIZEZ, float *cp
 	int ytop = offset + DDIMX[0];
 
 
-	if ((index_z >= k2begin[0]) && (index_z < kminus1end[0])) {
+	if ((index_z >= 0) && (index_z < DDIMZ[0])) {
 		if ((index_y >= 0) && (index_y < DDIMY[0] - 1)) {
 			if ((index_x >= 1) && (index_x < DDIMX[0])) {
 				float vs = (cs[left] + cs[ytop]) / 2;
@@ -115,7 +115,7 @@ __global__ void kersigmaxy(int *k2begin, int *kminus1end, int *NSIZEZ, float *cp
 
 }
 
-__global__ void kersigmaxzyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *memory_dvz_dx, float *memory_dvx_dz, float *memory_dvz_dy, float *memory_dvy_dz, float *a_x, float *a_z, float *a_y_half, float *a_z_half, float *b_x, float *b_y_half, float *b_z_half, float *K_x, float *K_y_half, float *K_z_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy, float *vz, float *sigmaxz, float *sigmayz) {
+__global__ void kersigmaxzyz(float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *memory_dvz_dx, float *memory_dvx_dz, float *memory_dvz_dy, float *memory_dvy_dz, float *a_x, float *a_z, float *a_y_half, float *a_z_half, float *b_x, float *b_y_half, float *b_z_half, float *K_x, float *K_y_half, float *K_z_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy, float *vz, float *sigmaxz, float *sigmayz) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -130,7 +130,7 @@ __global__ void kersigmaxzyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *
 	int ytop = offset + DDIMX[0];
 
 
-	if ((index_z >= k2begin[0]) && (index_z < kminus1end[0]-1)) {
+	if ((index_z >= 0) && (index_z < DDIMZ[0]-1)) {
 		//sigmaxz
 		if ((index_y >= 0) && (index_y < DDIMY[0])) {
 			if ((index_x >= 1) && (index_x < DDIMX[0])) {
@@ -180,7 +180,7 @@ __global__ void kersigmaxzyz(int *k2begin, int *kminus1end, int *NSIZEZ, float *
 
 }
 
-__global__ void kervxvy(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *sigmaxx, float *sigmaxy, float *sigmaxz, float *sigmayy, float *sigmayz, float *memory_dsigmaxx_dx, float *memory_dsigmaxy_dy, float *memory_dsigmaxz_dz, float *memory_dsigmaxy_dx, float *memory_dsigmayy_dy, float *memory_dsigmayz_dz, float *a_x, float *a_y, float *a_z, float *a_x_half, float *a_y_half, float *b_x, float *b_y, float *b_z, float *b_x_half, float *b_y_half, float *K_x, float *K_y, float *K_z, float *K_x_half, float *K_y_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy) {
+__global__ void kervxvy(float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *sigmaxx, float *sigmaxy, float *sigmaxz, float *sigmayy, float *sigmayz, float *memory_dsigmaxx_dx, float *memory_dsigmaxy_dy, float *memory_dsigmaxz_dz, float *memory_dsigmaxy_dx, float *memory_dsigmayy_dy, float *memory_dsigmayz_dz, float *a_x, float *a_y, float *a_z, float *a_x_half, float *a_y_half, float *b_x, float *b_y, float *b_z, float *b_x_half, float *b_y_half, float *K_x, float *K_y, float *K_z, float *K_x_half, float *K_y_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vx, float *vy) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -197,7 +197,7 @@ __global__ void kervxvy(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, 
 	int ytop = offset + DDIMX[0];
 
 
-	if ((index_z >= k2begin[0] + 1) && (index_z < kminus1end[0])) {
+	if ((index_z >= 1) && (index_z < DDIMZ[0])) {
 		//vx
 		if ((index_y >= 1) && (index_y < DDIMY[0])) {
 			if ((index_x >= 1) && (index_x < DDIMX[0])) {
@@ -247,7 +247,7 @@ __global__ void kervxvy(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, 
 
 }
 
-__global__ void kervz(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *sigmaxz, float *sigmayz, float *sigmazz, float *memory_dsigmaxz_dx, float *memory_dsigmayz_dy, float *memory_dsigmazz_dz, float *b_x_half, float *b_y, float *b_z_half, float *a_x_half, float *a_y, float *a_z_half, float *K_x_half, float *K_y, float *K_z_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vz) {
+__global__ void kervz(float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, float *DELTAT, float *sigmaxz, float *sigmayz, float *sigmazz, float *memory_dsigmaxz_dx, float *memory_dsigmayz_dy, float *memory_dsigmazz_dz, float *b_x_half, float *b_y, float *b_z_half, float *a_x_half, float *a_y, float *a_z_half, float *K_x_half, float *K_y, float *K_z_half, float *ONE_OVER_DELTAX, float *ONE_OVER_DELTAY, float *ONE_OVER_DELTAZ, float *vz) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -262,7 +262,7 @@ __global__ void kervz(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, in
 	int ztop = offset + DDIMX[0] * DDIMY[0];
 
 
-	if ((index_z >= k2begin[0]) && (index_z < kminus1end[0] - 1)) {
+	if ((index_z >= 0) && (index_z < DDIMZ[0] - 1)) {
 		if ((index_y >= 1) && (index_y < DDIMY[0])) {
 			if ((index_x >= 0) && (index_x < DDIMX[0] - 1)) {
 				float rhos = (rho[offset] + rho[ztop]) / 2;
@@ -288,7 +288,7 @@ __global__ void kervz(int *k2begin, int *kminus1end, int *NSIZEZ, float *rho, in
 
 }
 
-__global__ void keraddSource(int *k2begin, int *kminus1end, int *NSIZEZ, float *lesrcx, float *lesrcy, float *lesrcz, float *sigmaxx, float *sigmayy, float *sigmazz, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *ISOURCE, int *JSOURCE, int *KSOURCE, float *ANGLE_FORCE, float *DEGREES_TO_RADIANS, float *DELTAT, float *factor, float *t0, float *ff0, float *DPI, float *vx, float *vy, float *vz) {
+__global__ void keraddSource(float *lesrcx, float *lesrcy, float *lesrcz, float *sigmaxx, float *sigmayy, float *sigmazz, float *cp, float *cs, float *rho, int *DDIMX, int *DDIMY, int *DDIMZ, int *iit, int *ISOURCE, int *JSOURCE, int *KSOURCE, float *ANGLE_FORCE, float *DEGREES_TO_RADIANS, float *DELTAT, float *factor, float *t0, float *ff0, float *DPI, float *vx, float *vy, float *vz) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -345,7 +345,7 @@ __global__ void keraddSource(int *k2begin, int *kminus1end, int *NSIZEZ, float *
 	}
 }
 
-__global__ void kerGather(int *k2begin, int *kminus1end, int *NSIZEZ, int *ISOURCE, int *JSOURCE, int *KSOURCE, int *DDIMX, int *DDIMY, int *DDIMZ, float *gatvx, float *gatvz, float *gatvy, int *DIMX, int *DIMY, int *DIMZ, int *gatx, int *gaty, int *DPML, float *vx, float *vy, float *vz) {
+__global__ void kerGather(int *ISOURCE, int *JSOURCE, int *KSOURCE, int *DDIMX, int *DDIMY, int *DDIMZ, float *gatvx, float *gatvz, float *gatvy, int *DIMX, int *DIMY, int *DIMZ, int *gatx, int *gaty, int *DPML, float *vx, float *vy, float *vz) {
 	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 	int index_z = blockIdx.z * blockDim.z + threadIdx.z;
@@ -368,27 +368,14 @@ __global__ void kerGather(int *k2begin, int *kminus1end, int *NSIZEZ, int *ISOUR
 }
 
 int main(void) {
-	//int nDevices;
-	//cudaGetDeviceCount(&nDevices);
-
-	const int ndev = 2;
-	//ndev = nDevices;
-
-	cudaStream_t stream[ndev];
-	for (int i = 0; i < ndev; i++) {
-		cudaStreamCreate(&stream[i]);
-	}
-
-	int NIMX, NIMY, NIMZ;
-	NIMX = 200;
-	NIMY = 200;
-	NIMZ = 200;
-
-	int NLOCX, NLOCY, NLOCZ;
-	NLOCX = NIMX / ndev;
-	NLOCY = NIMY / ndev;
-	NLOCZ = NIMZ / ndev;
+	int nDevices;
+	cudaGetDeviceCount(&nDevices);
 	
+	int NIMX, NIMY, NIMZ;
+	NIMX = 372;
+	NIMY = 372;
+	NIMZ = 372;
+		
 	int *DDIMX, *DDIMY, *DDIMZ;
 	HANDLE_ERROR(cudaMallocManaged((void**)&DDIMX, sizeof(int)));
 	HANDLE_ERROR(cudaMallocManaged((void**)&DDIMY, sizeof(int)));
@@ -478,7 +465,6 @@ int main(void) {
 			}
 		}
 	}
-
 	line = "modelcs.bin";
 	char *inname2 = const_cast<char*>(line.c_str());
 	FILE* file2 = fopen(inname2, "rb");
@@ -495,7 +481,6 @@ int main(void) {
 			}
 		}
 	}
-
 	line = "modelrh.bin";
 	char *inname3 = const_cast<char*>(line.c_str());
 	FILE* file3 = fopen(inname3, "rb");
@@ -573,9 +558,9 @@ int main(void) {
 	HANDLE_ERROR(cudaMallocManaged((void**)&DPML, sizeof(int)));
 	HANDLE_ERROR(cudaMemcpyAsync(DPML, &NPOINTS_PML, sizeof(int), cudaMemcpyHostToDevice, 0));
 	int ISOURCEE, JSOURCEE, KSOURCEE;
-	ISOURCEE = 10;
-	JSOURCEE = 10;
-	KSOURCEE = 10;
+	ISOURCEE = NIMX / 2;
+	JSOURCEE = NIMY / 2;
+	KSOURCEE = NIMZ / 2;
 
 	int *ISOURCE, *KSOURCE, *JSOURCE;
 	HANDLE_ERROR(cudaMallocManaged((void**)&ISOURCE, sizeof(int)));
@@ -1050,48 +1035,28 @@ int main(void) {
 	dim3 blocks;
 	blocks.x = NIMX / threads.x;
 	blocks.y = NIMY / threads.y;
-	blocks.z = NLOCZ / threads.z;
+	blocks.z = NIMZ / threads.z;
 
 	int *iit;
 	HANDLE_ERROR(cudaMalloc((void**)&iit, sizeof(int)));
 
 	for (int it = 1; it <= NSTEP; it++){
 		HANDLE_ERROR(cudaMemcpy(iit, &it, sizeof(int), cudaMemcpyHostToDevice));
-		for (int idev = 0; idev < ndev; idev++) {
-			cudaStreamCreate(&stream[idev]);
-			int ck2begin = (idev*NLOCZ) - 1;
-			if (idev == 0) {
-				ck2begin = ck2begin + 1;
-			}
-			int ckminus1end = (idev*NLOCZ);
-			if (idev == ndev - 1) {
-				ckminus1end = ckminus1end - 1;
-			}
-			int NSIZEZZ = (ckminus1end - ck2begin) + 1;
 
-			int *k2begin, *kminus1end, *NSIZEZ;
-			HANDLE_ERROR(cudaMallocManaged((void**)&k2begin, sizeof(int)));
-			HANDLE_ERROR(cudaMallocManaged((void**)&kminus1end, sizeof(int)));
-			HANDLE_ERROR(cudaMallocManaged((void**)&NSIZEZ, sizeof(int)));
-			HANDLE_ERROR(cudaMemcpyAsync(k2begin, &ck2begin, sizeof(int), cudaMemcpyHostToDevice, stream[idev]));
-			HANDLE_ERROR(cudaMemcpyAsync(kminus1end, &ckminus1end, sizeof(int), cudaMemcpyHostToDevice, stream[idev]));
-			HANDLE_ERROR(cudaMemcpyAsync(NSIZEZ, &NSIZEZZ, sizeof(int), cudaMemcpyHostToDevice, stream[idev]));
-			
-			kersigmaxyz << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
+		kersigmaxyz << <blocks, threads >> >(cp, cs, rho, DELTAT, DDIMX, DDIMY, DDIMZ, memory_dvx_dx, memory_dvy_dy, memory_dvz_dz, a_x_half, a_y, a_z, b_x_half, b_y, b_z, K_x_half, K_y, K_z, sigmaxx, sigmayy, sigmazz, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz);
 
-			kersigmaxy << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
+		kersigmaxy << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvy_dx, memory_dvx_dy, a_x, a_y_half, b_x, b_y_half, K_x, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, vx, vy, sigmaxy);
 
-			kersigmaxzyz << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
+		kersigmaxzyz << <blocks, threads >> >(cp, cs, rho, DDIMX, DDIMY, DDIMZ, DELTAT, memory_dvz_dx, memory_dvx_dz, memory_dvz_dy, memory_dvy_dz, a_x, a_z, a_y_half, a_z_half, b_x, b_y_half, b_z_half, K_x, K_y_half, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy, vz, sigmaxz, sigmayz);
 
-			kervxvy << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
+		kervxvy << <blocks, threads >> >(rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxx, sigmaxy, sigmaxz, sigmayy, sigmayz, memory_dsigmaxx_dx, memory_dsigmaxy_dy, memory_dsigmaxz_dz, memory_dsigmaxy_dx, memory_dsigmayy_dy, memory_dsigmayz_dz, a_x, a_y, a_z, a_x_half, a_y_half, b_x, b_y, b_z, b_x_half, b_y_half, K_x, K_y, K_z, K_x_half, K_y_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vx, vy);
 
-			kervz << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
+		kervz << <blocks, threads >> >(rho, DDIMX, DDIMY, DDIMZ, DELTAT, sigmaxz, sigmayz, sigmazz, memory_dsigmaxz_dx, memory_dsigmayz_dy, memory_dsigmazz_dz, b_x_half, b_y, b_z_half, a_x_half, a_y, a_z_half, K_x_half, K_y, K_z_half, ONE_OVER_DELTAX, ONE_OVER_DELTAY, ONE_OVER_DELTAZ, vz);
 
-			kerGather << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, ISOURCE, JSOURCE, KSOURCE, DDIMX, DDIMY, DDIMZ, gatvx, gatvz, gatvy, DDIMX, DDIMY, DDIMZ, gatx, gaty, DPML, vx, vy, vz);
+		kerGather << <blocks, threads >> >(ISOURCE, JSOURCE, KSOURCE, DDIMX, DDIMY, DDIMZ, gatvx, gatvz, gatvy, DDIMX, DDIMY, DDIMZ, gatx, gaty, DPML, vx, vy, vz);
 
-			keraddSource << <blocks, threads, 0, stream[idev] >> >(k2begin, kminus1end, NSIZEZ, lesrcx, lesrcy, lesrcz, sigmaxx, sigmayy, sigmazz, cp, cs, rho, DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy, vz);
-		}
-
+		keraddSource << <blocks, threads >> >(lesrcx, lesrcy, lesrcz, sigmaxx, sigmayy, sigmazz, cp, cs, rho, DDIMX, DDIMY, DDIMZ, iit, ISOURCE, JSOURCE, KSOURCE, ANGLE_FORCE, DEGREES_TO_RADIANS, DELTAT, factor, t0, ff0, DPI, vx, vy, vz);
+		
 		if (fmod(it, sampgat) == 0) {
 			char nmfile4[20], nmfile5[20], nmfile6[20];
 
