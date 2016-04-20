@@ -372,9 +372,9 @@ int main(void) {
 	cudaGetDeviceCount(&nDevices);
 	
 	int NIMX, NIMY, NIMZ;
-	NIMX = 372;
-	NIMY = 372;
-	NIMZ = 372;
+	NIMX = 370;
+	NIMY = 370;
+	NIMZ = 370;
 		
 	int *DDIMX, *DDIMY, *DDIMZ;
 	HANDLE_ERROR(cudaMallocManaged((void**)&DDIMX, sizeof(int)));
@@ -384,14 +384,11 @@ int main(void) {
 	DDIMY[0] = NIMY;
 	DDIMZ[0] = NIMZ;
 
-	// jml receiver = ((gatx+1)*(gaty+1))
-	int Ngatx = 100;
-	int Ngaty = 6;
 	int *gatx, *gaty;
 	HANDLE_ERROR(cudaMallocManaged((void**)&gatx, sizeof(int)));
 	HANDLE_ERROR(cudaMallocManaged((void**)&gaty, sizeof(int)));
-	gatx[0] = Ngatx;
-	gaty[0] = Ngaty;
+	gatx[0] = 100;
+	gaty[0] = 6;
 
 	float *tempgat = (float*)malloc(sizeof(float)*(NIMX*NIMY));
 	for (int i = 0; i < NIMX; i++){
